@@ -1,0 +1,756 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ApprovalOptions {
+  Id                    Int     @id
+  ProjectId             Int
+  TimeApprovalMode      Int
+  ExpenseApprovalMode   Int
+  EnableClientApprovals Boolean
+}
+
+model ApprovalWorkflowSteps {
+  Id           Int  @id
+  ProjectId    Int
+  WorkflowType Int
+  StepNumber   Int
+  ApproverId   Int?
+}
+
+model Assignments {
+  Id            Int       @id
+  Title         String    @db.VarChar(250)
+  Details       String?
+  DueDate       DateTime? @db.Timestamp(6)
+  Status        String    @db.VarChar(50)
+  ProjectId     Int
+  AssigneeId    Int?
+  ResourceType  String    @db.VarChar(50)
+  EntryMode     String    @db.VarChar(20)
+  IsBillable    Boolean
+  PlannedHours  Decimal?  @db.Decimal(18, 2)
+  ActualHours   Decimal?  @db.Decimal(18, 2)
+  BillRate      Decimal?  @db.Decimal(18, 2)
+  BillFrequency String?   @db.VarChar(20)
+  StartDate     DateTime? @db.Timestamp(6)
+  EndDate       DateTime? @db.Timestamp(6)
+  ProjectRoleId Int?
+  IsActive      Boolean
+  LockedHours   Decimal?  @db.Decimal(10, 2)
+}
+
+model AuditLogs {
+  Id         Int       @id
+  UserId     Int
+  TableName  String?   @db.VarChar(100)
+  RecordId   Int?
+  FieldName  String?   @db.VarChar(100)
+  OldValue   String?
+  NewValue   String?
+  ActionType String?   @db.VarChar(50)
+  ChangedAt  DateTime? @db.Timestamp(6)
+  IpAddress  String?   @db.VarChar(50)
+  Browser    String?   @db.VarChar(100)
+}
+
+model BillingSettings {
+  Id           Int    @id
+  ProjectId    Int
+  CurrencyCode String @db.VarChar(3)
+  BillingType  Int
+}
+
+model Categories {
+  Id   Int    @id
+  Name String @db.VarChar(100)
+}
+
+model CategoryMaster {
+  Id           Int      @id
+  CategoryName String   @db.VarChar(200)
+  IsActive     Boolean
+  CreatedDate  DateTime @db.Timestamp(6)
+}
+
+model Clients {
+  Id                     Int       @id
+  ClientName             String    @db.VarChar(200)
+  Address                String?   @db.VarChar(500)
+  ContactPerson          String?   @db.VarChar(200)
+  ContactEmail           String?   @db.VarChar(200)
+  IsActive               Boolean
+  CreatedAt              DateTime  @db.Timestamp(6)
+  ClientId               String?   @db.VarChar(50)
+  ClientCode             String?   @db.VarChar(50)
+  Country                String?   @db.VarChar(100)
+  ContactName            String?   @db.VarChar(100)
+  AlternateContact       String?   @db.VarChar(100)
+  Industry               String?   @db.VarChar(50)
+  Phone                  String?   @db.VarChar(50)
+  Designation            String?   @db.VarChar(1000)
+  InternalAccountManager String?   @db.VarChar(100)
+  SalesManager           String?   @db.VarChar(100)
+  DeliveryManager        String?   @db.VarChar(100)
+  SupportManager         String?   @db.VarChar(100)
+  ContractId             String?   @db.VarChar(50)
+  ContractStartDate      DateTime? @db.Date
+  ContractEndDate        DateTime? @db.Date
+  ContractValue          Decimal?  @db.Decimal(18, 2)
+  PaymentTerms           String?   @db.VarChar(100)
+  BillingType            String?   @db.VarChar(50)
+  InvoiceSchedule        String?   @db.VarChar(50)
+  LastInvoiceDate        DateTime? @db.Date
+  OutstandingAmount      Decimal?  @db.Decimal(18, 2)
+  ClientSatisfaction     Int?
+  RelationshipStatus     String?   @db.VarChar(50)
+  EscalationContact      String?   @db.VarChar(100)
+  EscalationEmailId      String?   @db.VarChar(100)
+  FeedbackNotes          String?
+  ProfileImage           Bytes?
+  accountmanagerid       Int?
+  salesmanagerid         Int?
+  delivermanagerid       Int?
+  supportmanagerid       Int?
+}
+
+model CurrencyMaster {
+  CurrencyId     Int       @id
+  CurrencyCode   String    @db.Char(3)
+  CurrencyName   String    @db.VarChar(100)
+  CurrencySymbol String?   @db.VarChar(10)
+  DecimalPlaces  Int       @db.SmallInt
+  IsActive       Boolean
+  CreatedAt      DateTime  @db.Timestamp(6)
+  CreatedBy      String?   @db.VarChar(50)
+  UpdatedAt      DateTime? @db.Timestamp(6)
+  UpdatedBy      String?   @db.VarChar(50)
+}
+
+model DailyTotals {
+  Id          Int      @id
+  TimesheetId Int
+  Date        DateTime @db.Date
+  TotalHours  Decimal  @db.Decimal(8, 2)
+}
+
+model Departments {
+  Id          Int      @id
+  Name        String   @db.VarChar(100)
+  IsActive    Boolean
+  CreatedDate DateTime @db.Timestamp(6)
+}
+
+model Designations {
+  Id         Int      @id
+  NameofDesg String   @db.VarChar(100)
+  IsActive   Boolean
+  CreatedAt  DateTime @db.Timestamp(6)
+}
+
+model EmailOtps {
+  Id         Int       @id
+  Email      String    @db.VarChar(200)
+  OtpCode    String    @db.VarChar(10)
+  ExpiryTime DateTime  @db.Timestamp(6)
+  IsUsed     Boolean?
+  CreatedAt  DateTime? @db.Timestamp(6)
+}
+
+model EmailTemplateLogs {
+  Id           BigInt    @id
+  TemplateId   Int
+  ToEmail      String    @db.VarChar(320)
+  Subject      String    @db.VarChar(300)
+  Body         String
+  Status       String    @db.VarChar(50)
+  RetryCount   Int
+  SentAt       DateTime? @db.Timestamp(6)
+  ErrorMessage String?   @db.VarChar(2000)
+  CreatedAt    DateTime  @db.Timestamp(6)
+}
+
+model EmailTemplates {
+  Id            Int      @id
+  Name          String   @db.VarChar(200)
+  Description   String?  @db.VarChar(1000)
+  Module        String   @db.VarChar(100)
+  Event         String   @db.VarChar(100)
+  RecipientType String   @db.VarChar(100)
+  Subject       String   @db.VarChar(300)
+  Body          String
+  IsActive      Boolean
+  AutoSend      Boolean
+  Language      String   @db.VarChar(20)
+  RetryCount    Int
+  CreatedAt     DateTime @db.Timestamp(6)
+  UpdatedAt     DateTime @db.Timestamp(6)
+  ToField       String?  @db.VarChar(200)
+  NameField     String?  @db.VarChar(200)
+}
+
+model EmployeeContactDetails {
+  Id             Int     @id
+  EmployeeId     Int?
+  CorporateEmail String? @db.VarChar(150)
+  PersonalEmail  String? @db.VarChar(150)
+  MobileNumber   String? @db.VarChar(20)
+  AddressLine1   String? @db.VarChar(500)
+  AddressLine2   String? @db.VarChar(500)
+}
+
+model EmployeeDocuments {
+  Id           Int      @id
+  EmployeeId   Int
+  DocumentType String   @db.VarChar(100)
+  FileName     String   @db.VarChar(255)
+  ContentType  String   @db.VarChar(100)
+  FileData     Bytes
+  UploadedOn   DateTime @db.Timestamp(6)
+}
+
+model EmployeeEmergencyContacts {
+  Id           Int     @id
+  EmployeeId   Int?
+  ContactName  String? @db.VarChar(150)
+  Relationship String? @db.VarChar(100)
+  PhoneNumber  String? @db.VarChar(20)
+}
+
+model EmployeeSystemDetails {
+  Id              Int      @id
+  EmployeeId      Int?
+  Username        String?  @db.VarChar(150)
+  SystemRole      String?  @db.VarChar(50)
+  WorkLocation    String?  @db.VarChar(100)
+  AssetId         String?  @db.VarChar(100)
+  OperatingSystem String?  @db.VarChar(100)
+  VPNAccess       Boolean?
+}
+
+model Employees {
+  Id                Int       @id
+  EmployeeId        String?   @db.VarChar(50)
+  FirstName         String?   @db.VarChar(100)
+  MiddleName        String?   @db.VarChar(100)
+  LastName          String?   @db.VarChar(100)
+  DateOfBirth       DateTime? @db.Date
+  Gender            String?   @db.VarChar(20)
+  Country           String?   @db.VarChar(100)
+  State             String?   @db.VarChar(100)
+  City              String?   @db.VarChar(100)
+  Nationality       String?   @db.VarChar(100)
+  PrimarySkillset   String?   @db.VarChar(200)
+  SecondarySkillset String?   @db.VarChar(200)
+  EmploymentType    String?   @db.VarChar(50)
+  DateOfJoining     DateTime? @db.Date
+  Department        String?   @db.VarChar(100)
+  Designation       String?   @db.VarChar(100)
+  ReportingManager  String?   @db.VarChar(100)
+  COE               String?   @db.VarChar(100)
+  Level             String?   @db.VarChar(50)
+  MemberBillability String?   @db.VarChar(50)
+  Mem_Location      String?   @db.VarChar(100)
+  Exp_prior_Mygo    String?   @db.VarChar(100)
+  Member_Tag        String?   @db.VarChar(100)
+  mygoempid         String?   @db.VarChar(50)
+  RegionalTimeZone  String?   @db.VarChar(50)
+  formattype        String?   @db.VarChar(12)
+  Visastatus        String?   @db.VarChar(500)
+}
+
+model ExpenseAttachments {
+  AttachmentId     Int       @id
+  ExpenseNo        String    @db.VarChar(50)
+  ExpenseId        Int?
+  OriginalFileName String    @db.VarChar(255)
+  ContentType      String?   @db.VarChar(100)
+  FileSize         BigInt?
+  FileData         Bytes
+  UploadedBy       String?   @db.VarChar(100)
+  UploadedOn       DateTime? @db.Timestamp(6)
+}
+
+model ExpenseEntryRowApprovals {
+  Id         Int       @id
+  ExpenseId  Int
+  StepNumber Int
+  ApproverId Int
+  Status     String    @db.VarChar(50)
+  ActionDate DateTime? @db.Timestamp(6)
+  Remarks    String?   @db.VarChar(500)
+  CreatedAt  DateTime  @db.Timestamp(6)
+}
+
+model ExpenseHistoryLogs {
+  Id           Int       @id
+  ExpenseId    Int
+  Action       String?   @db.VarChar(100)
+  Remarks      String?
+  ActionBy     Int?
+  ActionByName String?   @db.VarChar(200)
+  ActionDate   DateTime? @db.Timestamp(6)
+  OldStatus    String?   @db.VarChar(50)
+  NewStatus    String?   @db.VarChar(50)
+}
+
+model ExpenseTypes {
+  ExpenseTypeId Int      @id
+  Category      String?  @db.VarChar(50)
+  ExpenseName   String?  @db.VarChar(100)
+  IsActive      Boolean
+  CreatedAt     DateTime @db.Timestamp(6)
+}
+
+model Expenses {
+  ExpenseId      Int      @id
+  ExpenseNo      String   @db.VarChar(30)
+  ExpenseDate    DateTime @db.Date
+  ExpenseTypeId  Int
+  Vendor         String?  @db.VarChar(200)
+  Project        String?  @db.VarChar(200)
+  Currency       String   @db.VarChar(10)
+  Amount         Decimal  @db.Decimal(18, 2)
+  ReimburseToMe  Boolean
+  BillToClient   Boolean
+  ExpDescription String?  @db.VarChar(500)
+  CreatedBy      Int?
+  CreatedOn      DateTime @db.Timestamp(6)
+  CreatedAt      DateTime @db.Timestamp(6)
+  ExpTitle       String?  @db.VarChar(1000)
+  ProjectId      Int
+  CurrentStep    Int
+  Status         String   @db.VarChar(50)
+  UserId         Int?
+  CurrencySymbol String?  @db.VarChar(10)
+}
+
+model Forecasts {
+  Id                Int      @id
+  ProjectId         Int
+  ForecastWeekStart DateTime @db.Date
+  PlannedHours      Decimal  @db.Decimal(8, 2)
+  Notes             String?  @db.VarChar(1000)
+  CreatedAt         DateTime @db.Timestamp(6)
+}
+
+model Holidays {
+  Id           Int      @id
+  HolidayDate  DateTime @db.Date
+  HolidayName  String   @db.VarChar(200)
+  HolidayType  String   @db.VarChar(50)
+  Country      String   @db.VarChar(100)
+  HolidayYear  Int
+  CreatedById  Int?
+  CreatedDate  DateTime @db.Timestamp(6)
+  IsActive     Boolean
+  CalendarName String?  @db.VarChar(100)
+}
+
+model JobSettings {
+  Id             Int      @id
+  JobName        String?  @db.VarChar(100)
+  CronExpression String?  @db.VarChar(100)
+  IsEnabled      Boolean?
+}
+
+model LeaveApplications {
+  Id           Int      @id
+  LeaveType    String   @db.VarChar(100)
+  FromDate     DateTime @db.Date
+  ToDate       DateTime @db.Date
+  NumberOfDays Int
+  Reason       String?
+  UserId       String?  @db.VarChar(450)
+  CreatedAt    DateTime @db.Timestamp(6)
+}
+
+model LoginLogs {
+  Id        Int      @id
+  UserId    Int
+  LoginTime DateTime @db.Timestamp(6)
+  IpAddress String?  @db.VarChar(45)
+  UserAgent String?  @db.VarChar(500)
+}
+
+model Modules {
+  Id          Int      @id
+  Name        String   @db.VarChar(100)
+  Description String?  @db.VarChar(250)
+  IsActive    Boolean
+  CreatedAt   DateTime @db.Timestamp(6)
+}
+
+model MyDocuments {
+  Id         Int       @id
+  Name       String    @db.VarChar(255)
+  IsFolder   Boolean
+  SharedBy   String?   @db.VarChar(255)
+  DateShared DateTime? @db.Timestamp(6)
+  Activity   String?   @db.VarChar(255)
+  UserId     String    @db.VarChar(450)
+  CreatedAt  DateTime  @db.Timestamp(6)
+}
+
+model Permissions {
+  Id          Int      @id
+  Code        String   @db.VarChar(100)
+  Name        String   @db.VarChar(150)
+  Description String?  @db.VarChar(250)
+  Module      String?  @db.VarChar(50)
+  CreatedAt   DateTime @db.Timestamp(6)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ProjectRoles {
+  RoleId      Int
+  RoleName    String   @db.VarChar(150)
+  Description String?
+  CreatedAt   DateTime @db.Timestamp(6)
+  CreatedBy   String?  @db.VarChar(100)
+  IsActive    Boolean
+
+  @@ignore
+}
+
+model ProjectSettings {
+  Id                   Int     @id
+  ProjectId            Int
+  UseRoles             Boolean
+  TrackOverallBudget   Boolean
+  TrackMonthlyBudget   Boolean
+  TrackProjectHealth   Boolean
+  LockTimeAndExpenses  Boolean
+  ExpenseItemsBillable Boolean
+  AutoAssignMembers    Boolean
+  NotifyMembers        Boolean
+}
+
+model Projects {
+  Id                Int       @id
+  Code              String?   @db.VarChar(50)
+  Name              String    @db.VarChar(200)
+  ClientId          Int?
+  IsActive          Boolean
+  CreatedAt         DateTime  @db.Timestamp(6)
+  description       String?
+  startDate         DateTime? @db.Timestamp(6)
+  endDate           DateTime? @db.Timestamp(6)
+  accountManagerID  Int?
+  billtoClientId    String?   @db.VarChar(10)
+  totalPlannedHours Decimal?  @db.Decimal(18, 2)
+  totalActHours     Decimal?  @db.Decimal(10, 2)
+  PointofContact    String?   @db.VarChar(50)
+  status            String?   @db.VarChar(50)
+  CalendarName      String?   @db.VarChar(100)
+}
+
+model RoleModulePermissions {
+  Id         Int     @id
+  RoleId     Int
+  ModuleId   Int
+  CanView    Boolean
+  CanAdd     Boolean
+  CanEdit    Boolean
+  CanDelete  Boolean
+  CanApprove Boolean
+  CanExport  Boolean
+}
+
+model RolePermissions {
+  RoleId       Int
+  PermissionId Int
+
+  @@id([PermissionId, RoleId])
+}
+
+model Roles {
+  Id          Int      @id
+  Name        String   @db.VarChar(50)
+  Description String?  @db.VarChar(200)
+  IsActive    Boolean
+  CreatedAt   DateTime @db.Timestamp(6)
+}
+
+model Skills {
+  Id   Int    @id
+  Name String @db.VarChar(100)
+}
+
+model SubCategoryMaster {
+  Id              Int      @id
+  CategoryId      Int
+  SubCategoryName String   @db.VarChar(300)
+  AssignmentGroup String   @db.VarChar(200)
+  IsActive        Boolean
+  CreatedDate     DateTime @db.Timestamp(6)
+}
+
+model SubDepartments {
+  Id           Int      @id
+  DepartmentId Int
+  Name         String   @db.VarChar(150)
+  IsActive     Boolean
+  CreatedDate  DateTime @db.Timestamp(6)
+}
+
+model TemplateEvents {
+  Id        Int       @id
+  EventName String    @db.VarChar(200)
+  CreatedAt DateTime? @db.Timestamp(6)
+}
+
+model TemplateModules {
+  Id         Int       @id
+  ModuleName String    @db.VarChar(200)
+  CreatedAt  DateTime? @db.Timestamp(6)
+}
+
+model TemplatePlaceholders {
+  Id          Int      @id
+  Module      String   @db.VarChar(100)
+  Event       String?  @db.VarChar(100)
+  Key         String   @db.VarChar(100)
+  SampleValue String?  @db.VarChar(500)
+  CreatedAt   DateTime @db.Timestamp(6)
+}
+
+model TemplateVersions {
+  Id         Int      @id
+  TemplateId Int
+  Subject    String   @db.VarChar(300)
+  Body       String
+  CreatedAt  DateTime @db.Timestamp(6)
+}
+
+model TicketActivities {
+  Id          Int      @id
+  TicketId    Int
+  Action      String   @db.VarChar(255)
+  PerformedBy String?  @db.VarChar(255)
+  CreatedDate DateTime @db.Timestamp(6)
+}
+
+model TicketAttachments {
+  Id           Int       @id
+  TicketId     Int
+  FileName     String?   @db.VarChar(255)
+  ContentType  String?   @db.VarChar(100)
+  FileData     Bytes?
+  UploadedDate DateTime? @db.Timestamp(6)
+  FileSize     BigInt?
+  UploadedBy   String?   @db.VarChar(100)
+}
+
+model TicketComments {
+  Id          Int      @id
+  TicketId    Int
+  Comment     String
+  CommentedBy String?  @db.VarChar(200)
+  CreatedDate DateTime @db.Timestamp(6)
+}
+
+model Tickets {
+  Id                  Int      @id
+  TicketCode          String   @db.VarChar(20)
+  Title               String   @db.VarChar(200)
+  Description         String?
+  Priority            String?  @db.VarChar(20)
+  Status              String?  @db.VarChar(20)
+  CreatedBy           String?  @db.VarChar(100)
+  AssignedUserId      Int?
+  CreatedDate         DateTime @db.Timestamp(6)
+  CreatedUserId       Int?
+  CategoryMasterId    Int?
+  SubCategoryMasterId Int?
+}
+
+model TimeEntryAttachments {
+  Id             Int      @id
+  TimeEntryRowId Int
+  FileName       String   @db.VarChar(255)
+  ContentType    String   @db.VarChar(100)
+  FileData       Bytes
+  UploadedBy     Int
+  UploadedAt     DateTime @db.Timestamp(6)
+}
+
+model TimeEntryCells {
+  Id             Int      @id
+  TimeEntryRowId Int
+  EntryDate      DateTime @db.Date
+  Hours          Decimal  @db.Decimal(6, 2)
+  CreatedAt      DateTime @db.Timestamp(6)
+  UserId         Int?
+  IsSubmitted    Boolean
+  ActivityType   String?  @db.VarChar(50)
+}
+
+model TimeEntryNotes {
+  Id              Int      @id
+  TimeEntryCellId Int?
+  TimeEntryRowId  Int?
+  UserId          String?  @db.VarChar(128)
+  NoteText        String   @db.VarChar(2000)
+  CreatedAt       DateTime @db.Timestamp(6)
+}
+
+model TimeEntryRowApprovals {
+  Id             Int      @id
+  TimeEntryRowId Int
+  ApproverId     Int
+  StepNumber     Int
+  Status         String   @db.VarChar(50)
+  ActionDate     DateTime @db.Timestamp(6)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model TimeEntryRowApprovals_Backup_Empty {
+  Id             Int
+  TimeEntryRowId Int
+  ApproverId     Int
+  StepNumber     Int
+  Status         String   @db.VarChar(50)
+  ActionDate     DateTime @db.Timestamp(6)
+
+  @@ignore
+}
+
+model TimeEntryRowAttachments {
+  Id             Int      @id
+  TimeEntryRowId Int
+  FileName       String   @db.VarChar(255)
+  ContentType    String   @db.VarChar(100)
+  FileData       Bytes
+  UploadedBy     Int
+  UploadedAt     DateTime @db.Timestamp(6)
+}
+
+model TimeEntryRows {
+  Id                Int     @id
+  TimesheetId       Int
+  ProjectId         Int
+  PlannedHours      Decimal @db.Decimal(8, 2)
+  TotalWorkingHours Decimal @db.Decimal(8, 2)
+  RowOrder          Int
+  Status            String  @db.VarChar(20)
+  CurrentStep       Int?
+  ActivityType      String? @db.VarChar(50)
+}
+
+model TimeTrackingRules {
+  Id                 Int     @id
+  ProjectId          Int
+  NotesRequired      Boolean
+  MustBeLinkedToTask Boolean
+  NoWeekends         Boolean
+  NoHolidays         Boolean
+  MaxHoursPerMonth   Int?
+  MaxHoursPerWeek    Int?
+  MaxHoursPerDay     Int?
+  MygoBench          Boolean
+  MygoCert           Boolean
+  MygoTraining       Boolean
+  AssigntoAll        Boolean
+}
+
+model TimesheetHistoryLogs {
+  Id             Int      @id
+  TimesheetId    Int
+  TimeEntryRowId Int?
+  UserId         Int
+  UserName       String?  @db.VarChar(200)
+  ProjectId      Int?
+  ProjectName    String?  @db.VarChar(300)
+  ActionType     String?  @db.VarChar(100)
+  Status         String?  @db.VarChar(100)
+  StepNumber     Int?
+  ApproverId     Int?
+  ApproverName   String?  @db.VarChar(200)
+  ActionDate     DateTime @db.Timestamp(6)
+  WorkflowStatus String?  @db.VarChar(100)
+  Remarks        String?
+}
+
+model Timesheets {
+  Id                Int       @id
+  UserId            Int?
+  PeriodStart       DateTime  @db.Date
+  PeriodEnd         DateTime  @db.Date
+  PeriodType        String    @db.VarChar(20)
+  Status            String    @db.VarChar(20)
+  PlannedHoursTotal Decimal   @db.Decimal(8, 2)
+  ActualHoursTotal  Decimal   @db.Decimal(8, 2)
+  OverUnder         Decimal   @db.Decimal(8, 2)
+  CreatedAt         DateTime  @db.Timestamp(6)
+  SubmittedAt       DateTime? @db.Timestamp(6)
+}
+
+model UploadedFiles {
+  Id          Int      @id
+  FileName    String   @db.VarChar(255)
+  ContentType String   @db.VarChar(100)
+  Size        BigInt
+  FilePath    String   @db.VarChar(500)
+  FolderId    Int
+  UploadedAt  DateTime @db.Timestamp(6)
+  UploadedBy  String   @db.VarChar(255)
+}
+
+model UserDesignations {
+  Id            Int       @id
+  UserId        Int
+  DesignationId Int
+  AssignedAt    DateTime? @db.Timestamp(6)
+}
+
+model UserRoles {
+  UserId     Int
+  RoleId     Int
+  CreatedAt  DateTime? @db.Timestamp(6)
+  ModifiedBy String?   @db.VarChar(450)
+  ModifiedAt DateTime? @db.Timestamp(6)
+
+  @@id([RoleId, UserId])
+}
+
+model UserSessionLogs {
+  Id               Int       @id
+  UserId           Int
+  LoginTime        DateTime  @db.Timestamp(6)
+  LogoutTime       DateTime? @db.Timestamp(6)
+  IpAddress        String?   @db.VarChar(50)
+  Browser          String?   @db.VarChar(100)
+  BrowserVersion   String?   @db.VarChar(50)
+  OS               String?   @db.VarChar(100)
+  Device           String?   @db.VarChar(100)
+  UserAgent        String?
+  TimeZone         String?   @db.VarChar(100)
+  ScreenResolution String?   @db.VarChar(50)
+  CreatedAt        DateTime? @db.Timestamp(6)
+}
+
+model Users {
+  Id                Int       @id
+  FullName          String    @db.VarChar(150)
+  Email             String    @db.VarChar(150)
+  PasswordHash      String    @db.VarChar(255)
+  CreatedAt         DateTime  @db.Timestamp(6)
+  AccessFailedCount Int
+  LockoutEnd        DateTime? @db.Timestamp(6)
+  LockoutEnabled    Boolean
+  IsActive          Boolean
+  ProfileImage      Bytes?
+}
+
+model EFMigrationsHistory {
+  MigrationId    String @id @db.VarChar(150)
+  ProductVersion String @db.VarChar(32)
+
+  @@map("__EFMigrationsHistory")
+}
