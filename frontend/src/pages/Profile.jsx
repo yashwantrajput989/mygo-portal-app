@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 export default function Profile() {
-    const { user, login } = useAuth();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState('personal');
@@ -85,12 +85,16 @@ export default function Profile() {
                     const emg = res.data.emergency || {};
                     const sys = res.data.system || {};
 
+                    const fName = emp.FirstName || u.fullName?.split(' ')[0] || 'Yashwant';
+                    const lName = emp.LastName || u.fullName?.split(' ')[1] || 'Rajput';
+                    const fullN = `${fName} ${lName}`.trim();
+
                     setPersonal({
-                        fullName: u.fullName || '',
-                        firstName: emp.FirstName || u.fullName?.split(' ')[0] || '',
+                        fullName: fullN,
+                        firstName: fName,
                         middleName: emp.MiddleName || '',
-                        lastName: emp.LastName || u.fullName?.split(' ')[1] || '',
-                        dateOfBirth: emp.DateOfBirth ? emp.DateOfBirth.slice(0, 10) : '',
+                        lastName: lName,
+                        dateOfBirth: emp.DateOfBirth ? String(emp.DateOfBirth).slice(0, 10) : '',
                         gender: emp.Gender || 'Male',
                         nationality: emp.Nationality || 'Indian',
                         country: emp.Country || 'India',
@@ -100,7 +104,7 @@ export default function Profile() {
                     });
 
                     setEmployee({
-                        employeeId: emp.EmployeeId || `MYG-${u.id}`,
+                        employeeId: emp.mygoempid || emp.EmployeeId || `MYG-${u.id || 29}`,
                         department: emp.Department || 'SAP Practice',
                         designation: emp.Designation || 'Senior Consultant',
                         reportingManager: emp.ReportingManager || 'Satish Sharma',
@@ -115,7 +119,7 @@ export default function Profile() {
                     });
 
                     setContact({
-                        corporateEmail: u.email || '',
+                        corporateEmail: u.email || c.CorporateEmail || '',
                         personalEmail: c.PersonalEmail || '',
                         mobileNumber: c.MobileNumber || '+91 98765 43210',
                         addressLine1: c.AddressLine1 || 'Hi-Tech City, Madhapur',
@@ -124,12 +128,12 @@ export default function Profile() {
 
                     setEmergency({
                         contactName: emg.ContactName || 'Family Member',
-                        relationship: emg.Relationship || 'Spouse',
+                        relationship: emg.Relationship || 'Friend',
                         phoneNumber: emg.PhoneNumber || '+91 98765 00000'
                     });
 
                     setSystem({
-                        username: sys.Username || u.email?.split('@')[0] || '',
+                        username: sys.Username || u.email?.split('@')[0] || 'yashwant',
                         systemRole: sys.SystemRole || 'Consultant',
                         assetId: sys.AssetId || 'MYGO-LT-2026',
                         operatingSystem: sys.OperatingSystem || 'Windows 11 Enterprise',
@@ -145,7 +149,7 @@ export default function Profile() {
     }, []);
 
     const handleSaveProfile = (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         setSaving(true);
         setMessage({ type: '', text: '' });
 
@@ -190,7 +194,7 @@ export default function Profile() {
     };
 
     const initials = personal.fullName
-        ? personal.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        ? personal.fullName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2)
         : 'YR';
 
     return (
@@ -251,16 +255,16 @@ export default function Profile() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                             <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a' }}>{personal.fullName || 'Yashwant Rajput'}</h2>
                             <span className="opsai-status-pill approved" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                <Sparkles size={11} /> {employee.designation}
+                                <Sparkles size={11} /> {employee.designation || 'Senior Consultant'}
                             </span>
-                            <span className="opsai-id-badge">{employee.employeeId}</span>
+                            <span className="opsai-id-badge">{employee.employeeId || 'MYG-29'}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '6px', fontSize: '13px', color: '#64748b', flexWrap: 'wrap' }}>
-                            <span><Building2 size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} /> {employee.department}</span>
+                            <span><Building2 size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} /> {employee.department || 'SAP Practice'}</span>
                             <span>•</span>
-                            <span><Award size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px', color: '#ff682c' }} /> COE: <strong style={{ color: '#0f172a' }}>{employee.coe}</strong></span>
+                            <span><Award size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px', color: '#ff682c' }} /> COE: <strong style={{ color: '#0f172a' }}>{employee.coe || 'Technical & Architecture'}</strong></span>
                             <span>•</span>
-                            <span><Mail size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} /> {contact.corporateEmail}</span>
+                            <span><Mail size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} /> {contact.corporateEmail || user?.email}</span>
                         </div>
                     </div>
                 </div>
@@ -331,7 +335,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={personal.firstName}
+                                            value={personal.firstName || ''}
                                             onChange={(e) => setPersonal({ ...personal, firstName: e.target.value })}
                                             required
                                         />
@@ -341,7 +345,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={personal.middleName}
+                                            value={personal.middleName || ''}
                                             onChange={(e) => setPersonal({ ...personal, middleName: e.target.value })}
                                         />
                                     </div>
@@ -350,7 +354,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={personal.lastName}
+                                            value={personal.lastName || ''}
                                             onChange={(e) => setPersonal({ ...personal, lastName: e.target.value })}
                                             required
                                         />
@@ -363,7 +367,7 @@ export default function Profile() {
                                         <input 
                                             type="date" 
                                             className="form-input" 
-                                            value={personal.dateOfBirth}
+                                            value={personal.dateOfBirth || ''}
                                             onChange={(e) => setPersonal({ ...personal, dateOfBirth: e.target.value })}
                                         />
                                     </div>
@@ -371,7 +375,7 @@ export default function Profile() {
                                         <label className="form-label">Gender</label>
                                         <select 
                                             className="form-select"
-                                            value={personal.gender}
+                                            value={personal.gender || 'Male'}
                                             onChange={(e) => setPersonal({ ...personal, gender: e.target.value })}
                                         >
                                             <option value="Male">Male</option>
@@ -384,7 +388,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={personal.nationality}
+                                            value={personal.nationality || ''}
                                             onChange={(e) => setPersonal({ ...personal, nationality: e.target.value })}
                                         />
                                     </div>
@@ -393,7 +397,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={personal.visaStatus}
+                                            value={personal.visaStatus || ''}
                                             onChange={(e) => setPersonal({ ...personal, visaStatus: e.target.value })}
                                         />
                                     </div>
@@ -405,7 +409,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={personal.country}
+                                            value={personal.country || ''}
                                             onChange={(e) => setPersonal({ ...personal, country: e.target.value })}
                                         />
                                     </div>
@@ -414,7 +418,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={personal.state}
+                                            value={personal.state || ''}
                                             onChange={(e) => setPersonal({ ...personal, state: e.target.value })}
                                         />
                                     </div>
@@ -423,7 +427,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={personal.city}
+                                            value={personal.city || ''}
                                             onChange={(e) => setPersonal({ ...personal, city: e.target.value })}
                                         />
                                     </div>
@@ -440,7 +444,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={employee.employeeId}
+                                            value={employee.employeeId || ''}
                                             disabled
                                             style={{ background: '#f1f5f9', color: '#64748b' }}
                                         />
@@ -450,7 +454,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={employee.designation}
+                                            value={employee.designation || ''}
                                             onChange={(e) => setEmployee({ ...employee, designation: e.target.value })}
                                         />
                                     </div>
@@ -459,7 +463,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={employee.department}
+                                            value={employee.department || ''}
                                             onChange={(e) => setEmployee({ ...employee, department: e.target.value })}
                                         />
                                     </div>
@@ -471,7 +475,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={employee.coe}
+                                            value={employee.coe || ''}
                                             onChange={(e) => setEmployee({ ...employee, coe: e.target.value })}
                                         />
                                     </div>
@@ -480,7 +484,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={employee.reportingManager}
+                                            value={employee.reportingManager || ''}
                                             onChange={(e) => setEmployee({ ...employee, reportingManager: e.target.value })}
                                         />
                                     </div>
@@ -489,7 +493,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={employee.level}
+                                            value={employee.level || ''}
                                             onChange={(e) => setEmployee({ ...employee, level: e.target.value })}
                                         />
                                     </div>
@@ -500,7 +504,7 @@ export default function Profile() {
                                         <label className="form-label">Employment Type</label>
                                         <select 
                                             className="form-select"
-                                            value={employee.employmentType}
+                                            value={employee.employmentType || 'Full Time'}
                                             onChange={(e) => setEmployee({ ...employee, employmentType: e.target.value })}
                                         >
                                             <option value="Full Time">Full Time</option>
@@ -512,7 +516,7 @@ export default function Profile() {
                                         <label className="form-label">Member Billability</label>
                                         <select 
                                             className="form-select"
-                                            value={employee.memberBillability}
+                                            value={employee.memberBillability || 'Billable'}
                                             onChange={(e) => setEmployee({ ...employee, memberBillability: e.target.value })}
                                         >
                                             <option value="Billable">Billable</option>
@@ -525,7 +529,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={employee.regionalTimeZone}
+                                            value={employee.regionalTimeZone || ''}
                                             onChange={(e) => setEmployee({ ...employee, regionalTimeZone: e.target.value })}
                                         />
                                     </div>
@@ -536,7 +540,7 @@ export default function Profile() {
                                     <input 
                                         type="text" 
                                         className="form-input" 
-                                        value={employee.primarySkillset}
+                                        value={employee.primarySkillset || ''}
                                         onChange={(e) => setEmployee({ ...employee, primarySkillset: e.target.value })}
                                     />
                                 </div>
@@ -546,7 +550,7 @@ export default function Profile() {
                                     <input 
                                         type="text" 
                                         className="form-input" 
-                                        value={employee.secondarySkillset}
+                                        value={employee.secondarySkillset || ''}
                                         onChange={(e) => setEmployee({ ...employee, secondarySkillset: e.target.value })}
                                     />
                                 </div>
@@ -562,7 +566,7 @@ export default function Profile() {
                                         <input 
                                             type="email" 
                                             className="form-input" 
-                                            value={contact.corporateEmail}
+                                            value={contact.corporateEmail || ''}
                                             disabled
                                             style={{ background: '#f1f5f9', color: '#64748b' }}
                                         />
@@ -572,7 +576,7 @@ export default function Profile() {
                                         <input 
                                             type="email" 
                                             className="form-input" 
-                                            value={contact.personalEmail}
+                                            value={contact.personalEmail || ''}
                                             onChange={(e) => setContact({ ...contact, personalEmail: e.target.value })}
                                             placeholder="your.personal@gmail.com"
                                         />
@@ -582,7 +586,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={contact.mobileNumber}
+                                            value={contact.mobileNumber || ''}
                                             onChange={(e) => setContact({ ...contact, mobileNumber: e.target.value })}
                                             placeholder="+91 98765 43210"
                                             required
@@ -595,7 +599,7 @@ export default function Profile() {
                                     <input 
                                         type="text" 
                                         className="form-input" 
-                                        value={contact.addressLine1}
+                                        value={contact.addressLine1 || ''}
                                         onChange={(e) => setContact({ ...contact, addressLine1: e.target.value })}
                                         placeholder="Flat/House No., Street, Building..."
                                     />
@@ -606,7 +610,7 @@ export default function Profile() {
                                     <input 
                                         type="text" 
                                         className="form-input" 
-                                        value={contact.addressLine2}
+                                        value={contact.addressLine2 || ''}
                                         onChange={(e) => setContact({ ...contact, addressLine2: e.target.value })}
                                         placeholder="Area, Postal Code, District..."
                                     />
@@ -623,7 +627,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={emergency.contactName}
+                                            value={emergency.contactName || ''}
                                             onChange={(e) => setEmergency({ ...emergency, contactName: e.target.value })}
                                             placeholder="E.g., Contact Person"
                                             required
@@ -633,7 +637,7 @@ export default function Profile() {
                                         <label className="form-label">Relationship</label>
                                         <select 
                                             className="form-select"
-                                            value={emergency.relationship}
+                                            value={emergency.relationship || 'Spouse'}
                                             onChange={(e) => setEmergency({ ...emergency, relationship: e.target.value })}
                                         >
                                             <option value="Spouse">Spouse</option>
@@ -648,7 +652,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={emergency.phoneNumber}
+                                            value={emergency.phoneNumber || ''}
                                             onChange={(e) => setEmergency({ ...emergency, phoneNumber: e.target.value })}
                                             placeholder="+91 98765 00000"
                                             required
@@ -667,7 +671,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={system.username}
+                                            value={system.username || ''}
                                             disabled
                                             style={{ background: '#f1f5f9', color: '#64748b' }}
                                         />
@@ -677,7 +681,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={system.assetId}
+                                            value={system.assetId || ''}
                                             disabled
                                             style={{ background: '#f1f5f9', color: '#64748b' }}
                                         />
@@ -687,7 +691,7 @@ export default function Profile() {
                                         <input 
                                             type="text" 
                                             className="form-input" 
-                                            value={system.operatingSystem}
+                                            value={system.operatingSystem || ''}
                                             disabled
                                             style={{ background: '#f1f5f9', color: '#64748b' }}
                                         />

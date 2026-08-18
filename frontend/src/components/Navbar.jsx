@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
     Home, Clock, DollarSign, Ticket, FolderOpen, 
-    Users, CheckSquare, Shield, BarChart2, LogOut, ChevronDown
+    Users, User, CheckSquare, Shield, BarChart2, LogOut, ChevronDown
 } from 'lucide-react';
 
 export default function Navbar() {
