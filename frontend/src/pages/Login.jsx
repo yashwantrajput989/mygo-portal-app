@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -11,8 +11,17 @@ export default function Login() {
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [dynamicTag, setDynamicTag] = useState('MYGO');
     const { login } = useAuth();
     const navigate = useNavigate();
+
+    // Alternating Tagline: Think SAP / Think MYGO
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setDynamicTag(prev => (prev === 'MYGO' ? 'SAP' : 'MYGO'));
+        }, 2600);
+        return () => clearInterval(interval);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -44,21 +53,25 @@ export default function Login() {
 
             {/* Main Content Layout */}
             <div className="space-login-container">
-                {/* Left Side: Brand Logo & Think MYGO Hero Typography */}
+                {/* Left Side: Brand Logo & Think MYGO / Think SAP Alternating Hero Typography */}
                 <div className="space-hero-side">
-                    {/* Top Brand Header */}
+                    {/* Top Brand Header (Clean typography without favicon icon) */}
                     <div className="brand-header">
-                        <div className="brand-logo-icon">
-                            <img src="/final3.png" alt="MyGo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
-                        </div>
-                        <span className="brand-logo-text">MYGO</span>
+                        <span className="brand-logo-text" style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '1.5px', color: '#ffffff' }}>
+                            MYGO
+                        </span>
                     </div>
 
-                    {/* Bottom Think MYGO Typography */}
+                    {/* Bottom Dynamic Tagline Typography: Think SAP <-> Think MYGO */}
                     <div className="hero-text-block">
                         <h1 className="hero-title">
                             <span className="title-white">Think </span>
-                            <span className="title-orange">MYGO</span>
+                            <span 
+                                key={dynamicTag} 
+                                className={`${dynamicTag === 'MYGO' ? 'title-orange' : 'title-sap'} tag-fade-in`}
+                            >
+                                {dynamicTag}
+                            </span>
                         </h1>
                         <p className="hero-desc">
                             A Global SAP Professional Solution Services Company.
@@ -110,24 +123,25 @@ export default function Login() {
                                 />
                             </div>
 
-                            <div className="space-form-actions">
-                                <label className="remember-checkbox-label">
+                            <div className="space-options-row">
+                                <label className="space-checkbox-label">
                                     <input 
                                         type="checkbox" 
                                         checked={rememberMe}
                                         onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="remember-checkbox"
+                                        className="space-checkbox"
                                     />
                                     <span>Remember Me</span>
                                 </label>
-
-                                <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Please contact your Workspace Admin to reset your credentials.'); }} className="forgot-password-link">
-                                    Forgot password?
-                                </a>
+                                <a href="#forgot" className="space-forgot-link">Forgot password?</a>
                             </div>
 
-                            <button type="submit" className="space-signin-btn" disabled={loading}>
-                                {loading ? 'Signing in...' : 'Sign in'}
+                            <button 
+                                type="submit" 
+                                className="space-submit-btn"
+                                disabled={loading}
+                            >
+                                {loading ? 'Authenticating...' : 'Sign in'}
                             </button>
                         </form>
                     </div>
