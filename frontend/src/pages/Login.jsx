@@ -123,22 +123,22 @@ export default function Login() {
                                 />
                             </div>
 
-                            <div className="space-options-row">
-                                <label className="space-checkbox-label">
+                            <div className="space-form-actions">
+                                <label className="remember-checkbox-label">
                                     <input 
                                         type="checkbox" 
                                         checked={rememberMe}
                                         onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="space-checkbox"
+                                        className="remember-checkbox"
                                     />
                                     <span>Remember Me</span>
                                 </label>
-                                <a href="#forgot" className="space-forgot-link">Forgot password?</a>
+                                <a href="#forgot" className="forgot-password-link">Forgot password?</a>
                             </div>
 
                             <button 
                                 type="submit" 
-                                className="space-submit-btn"
+                                className="space-signin-btn"
                                 disabled={loading}
                             >
                                 {loading ? 'Authenticating...' : 'Sign in'}

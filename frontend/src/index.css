@@ -1507,12 +1507,13 @@ body {
   text-decoration: underline;
 }
 
-.space-signin-btn {
+.space-signin-btn,
+.space-submit-btn {
   width: 100%;
   padding: 13px 20px;
   margin-top: 8px;
-  background: linear-gradient(135deg, #ff682c 0%, #ff7e47 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #ff682c 0%, #ff7e47 100%) !important;
+  color: #ffffff !important;
   border: none;
   border-radius: 10px;
   font-size: 15px;
@@ -1522,9 +1523,11 @@ body {
   box-shadow: 0 4px 18px rgba(255, 104, 44, 0.35);
 }
 
-.space-signin-btn:hover {
+.space-signin-btn:hover,
+.space-submit-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 24px rgba(255, 104, 44, 0.5);
+  background: linear-gradient(135deg, #ea580c 0%, #ff682c 100%) !important;
 }
 
 .space-signin-btn:disabled {
