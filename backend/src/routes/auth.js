@@ -87,7 +87,7 @@ async function verifyPassword(storedHash, providedPassword) {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body || {};
 
         if (!email) {
             return res.status(400).json({ success: false, message: 'Email is required' });
