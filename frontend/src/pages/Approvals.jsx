@@ -3,18 +3,21 @@ import api from '../services/api';
 import { 
     CheckCircle, XCircle, Clock, DollarSign, FileText, 
     ChevronRight, AlertCircle, Eye, User, Calendar, 
-    Paperclip, CheckSquare, MessageSquare, Filter, Search
+    Paperclip, CheckSquare, MessageSquare, Filter, Search, 
+    ShieldCheck, ArrowRight, Sparkles
 } from 'lucide-react';
 
 export default function Approvals() {
     const [activeTab, setActiveTab] = useState('timesheets');
     const [timesheets, setTimesheets] = useState([]);
     const [expenses, setExpenses] = useState([]);
+    const [userAuthority, setUserAuthority] = useState({ isAdmin: false, isManager: false });
     const [loading, setLoading] = useState(true);
     const [actionModal, setActionModal] = useState({ open: false, type: '', id: null, action: '', remarks: '' });
     const [inspectTsModal, setInspectTsModal] = useState({ open: false, item: null });
     const [message, setMessage] = useState({ type: '', text: '' });
     const [searchTerm, setSearchTerm] = useState('');
+    const [tierFilter, setTierFilter] = useState('All');
 
     const loadApprovalsData = () => {
         setLoading(true);
@@ -23,7 +26,10 @@ export default function Approvals() {
             api.get('/approvals/expenses')
         ])
         .then(([tsRes, expRes]) => {
-            if (tsRes.data.success) setTimesheets(tsRes.data.timesheets || []);
+            if (tsRes.data.success) {
+                setTimesheets(tsRes.data.timesheets || []);
+                if (tsRes.data.userAuthority) setUserAuthority(tsRes.data.userAuthority);
+            }
             if (expRes.data.success) setExpenses(expRes.data.expenses || []);
         })
         .catch(err => {
@@ -60,16 +66,24 @@ export default function Approvals() {
     const totalExpPending = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
 
     const filteredTimesheets = timesheets.filter(t => {
-        return t.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchSearch = t.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                t.employeeEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                t.projectNames?.some(p => p.toLowerCase().includes(searchTerm.toLowerCase()));
+        const matchTier = tierFilter === 'All' || 
+            (tierFilter === '1' && t.stepNumber === 1) || 
+            (tierFilter === '2' && t.stepNumber === 2);
+        return matchSearch && matchTier;
     });
 
     const filteredExpenses = expenses.filter(e => {
-        return e.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchSearch = e.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                e.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                e.projectName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                e.expenseNo?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchTier = tierFilter === 'All' || 
+            (tierFilter === '1' && e.stepNumber === 1) || 
+            (tierFilter === '2' && e.stepNumber === 2);
+        return matchSearch && matchTier;
     });
 
     return (
@@ -77,8 +91,13 @@ export default function Approvals() {
             {/* Top Page Header */}
             <div className="opsai-page-header">
                 <div>
-                    <h1 className="opsai-page-title">Executive Authorization & Approval Hub</h1>
-                    <p className="opsai-page-desc">Review, audit, and approve weekly team timesheets and employee reimbursement claims.</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <h1 className="opsai-page-title">Executive Authorization & Approval Hub</h1>
+                        <span className="opsai-status-pill approved" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <ShieldCheck size={12} /> {userAuthority.isAdmin ? 'Admin Authority' : 'Manager Authority'}
+                        </span>
+                    </div>
+                    <p className="opsai-page-desc">Multi-tier approval workflow: <strong>Employee Submit</strong> → <strong>Manager Approval (Step 1)</strong> → <strong>Admin Sign-Off (Step 2)</strong> → <strong>Reports Integration</strong>.</p>
                 </div>
             </div>
 
@@ -109,9 +128,11 @@ export default function Approvals() {
                         <Clock size={20} />
                     </div>
                     <div className="ts-kpi-content">
-                        <div className="ts-kpi-label">TIMESHEET SUBMISSIONS</div>
+                        <div className="ts-kpi-label">TIMESHEET QUEUE</div>
                         <div className="ts-kpi-val">{timesheets.length}</div>
-                        <div className="ts-kpi-sub">awaiting sign-off</div>
+                        <div className="ts-kpi-sub">
+                            {timesheets.filter(t => t.stepNumber === 1).length} at Step 1 • {timesheets.filter(t => t.stepNumber === 2).length} at Step 2
+                        </div>
                     </div>
                 </div>
 
@@ -122,7 +143,7 @@ export default function Approvals() {
                     <div className="ts-kpi-content">
                         <div className="ts-kpi-label">EXPENSE CLAIMS</div>
                         <div className="ts-kpi-val">{expenses.length}</div>
-                        <div className="ts-kpi-sub">awaiting audit</div>
+                        <div className="ts-kpi-sub">awaiting financial audit</div>
                     </div>
                 </div>
 
@@ -131,9 +152,9 @@ export default function Approvals() {
                         <Calendar size={20} />
                     </div>
                     <div className="ts-kpi-content">
-                        <div className="ts-kpi-label">HOURS PENDING AUDIT</div>
+                        <div className="ts-kpi-label">HOURS TO AUDIT</div>
                         <div className="ts-kpi-val">{totalHoursPending.toFixed(1)} hrs</div>
-                        <div className="ts-kpi-sub">across team members</div>
+                        <div className="ts-kpi-sub">team delivery logs</div>
                     </div>
                 </div>
 
@@ -142,9 +163,9 @@ export default function Approvals() {
                         <CheckSquare size={20} />
                     </div>
                     <div className="ts-kpi-content">
-                        <div className="ts-kpi-label">CLAIM VALUE PENDING</div>
+                        <div className="ts-kpi-label">REIMBURSEMENTS PENDING</div>
                         <div className="ts-kpi-val">${totalExpPending.toLocaleString()}</div>
-                        <div className="ts-kpi-sub">reimbursements</div>
+                        <div className="ts-kpi-sub">total claims amount</div>
                     </div>
                 </div>
             </div>
@@ -180,6 +201,16 @@ export default function Approvals() {
                                 className="opsai-search-input"
                             />
                         </div>
+
+                        <select 
+                            value={tierFilter} 
+                            onChange={(e) => setTierFilter(e.target.value)}
+                            className="opsai-status-select"
+                        >
+                            <option value="All">All Workflow Steps</option>
+                            <option value="1">Step 1: Manager Review</option>
+                            <option value="2">Step 2: Admin Sign-Off</option>
+                        </select>
                     </div>
                 </div>
 
@@ -194,8 +225,8 @@ export default function Approvals() {
                         ) : filteredTimesheets.length === 0 ? (
                             <div style={{ textAlign: 'center', padding: '48px' }}>
                                 <CheckCircle size={36} style={{ color: '#16a34a', margin: '0 auto 12px' }} />
-                                <h3 style={{ fontSize: '15px', fontWeight: 800 }}>All Timesheets Approved</h3>
-                                <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '4px' }}>There are no pending timesheets in your approval queue.</p>
+                                <h3 style={{ fontSize: '15px', fontWeight: 800 }}>Approval Queue Clean</h3>
+                                <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '4px' }}>There are no pending timesheets requiring your sign-off.</p>
                             </div>
                         ) : (
                             <table className="opsai-table">
@@ -203,6 +234,7 @@ export default function Approvals() {
                                     <tr>
                                         <th>EMPLOYEE</th>
                                         <th>PERIOD DATES</th>
+                                        <th>WORKFLOW STEP</th>
                                         <th>PROJECT ALLOCATIONS</th>
                                         <th style={{ textAlign: 'right' }}>TOTAL LOGGED</th>
                                         <th style={{ textAlign: 'center' }}>BREAKDOWN</th>
@@ -213,6 +245,7 @@ export default function Approvals() {
                                     {filteredTimesheets.map((ts) => {
                                         const pStart = new Date(ts.periodStart).toLocaleDateString();
                                         const pEnd = new Date(ts.periodEnd).toLocaleDateString();
+                                        const isStep2 = ts.stepNumber === 2;
 
                                         return (
                                             <tr key={ts.id}>
@@ -223,6 +256,12 @@ export default function Approvals() {
                                                 <td>
                                                     <div style={{ fontWeight: 700, color: '#334155' }}>{pStart} – {pEnd}</div>
                                                     <div style={{ fontSize: '11px', color: '#94a3b8' }}>Submitted {ts.submittedAt ? new Date(ts.submittedAt).toLocaleDateString() : 'Recently'}</div>
+                                                </td>
+                                                <td>
+                                                    <span className={`opsai-status-pill ${isStep2 ? 'approved' : 'pending'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                        {isStep2 ? <ShieldCheck size={11} /> : <Clock size={11} />}
+                                                        {ts.stepLabel}
+                                                    </span>
                                                 </td>
                                                 <td>
                                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -263,7 +302,7 @@ export default function Approvals() {
                                                             className="opsai-btn-sm success"
                                                             onClick={() => setActionModal({ open: true, type: 'timesheets', id: ts.id, action: 'Approve', remarks: '' })}
                                                         >
-                                                            <CheckCircle size={13} /> Approve
+                                                            <CheckCircle size={13} /> {isStep2 ? 'Final Sign-Off' : 'Approve Step 1'}
                                                         </button>
                                                     </div>
                                                 </td>
@@ -296,6 +335,7 @@ export default function Approvals() {
                                     <tr>
                                         <th>CLAIM & EMPLOYEE</th>
                                         <th>PROJECT ALLOCATION</th>
+                                        <th>WORKFLOW STEP</th>
                                         <th>DATE & VENDOR</th>
                                         <th style={{ textAlign: 'right' }}>AMOUNT</th>
                                         <th style={{ textAlign: 'center' }}>RECEIPT</th>
@@ -303,57 +343,66 @@ export default function Approvals() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredExpenses.map((exp) => (
-                                        <tr key={exp.id}>
-                                            <td>
-                                                <div style={{ fontWeight: 800, color: '#0f172a' }}>{exp.title}</div>
-                                                <div style={{ fontSize: '12px', color: '#64748b' }}>By <strong style={{ color: '#0f172a' }}>{exp.employeeName}</strong> • {exp.expenseNo}</div>
-                                            </td>
-                                            <td>
-                                                <div style={{ fontWeight: 700, color: '#334155' }}>{exp.projectName}</div>
-                                                <div style={{ fontSize: '11px', color: '#94a3b8' }}>{exp.projectCode || 'General'}</div>
-                                            </td>
-                                            <td>
-                                                <div style={{ fontWeight: 600, color: '#334155' }}>{new Date(exp.expenseDate).toLocaleDateString()}</div>
-                                                <div style={{ fontSize: '11px', color: '#94a3b8' }}>{exp.vendor || 'Merchant'}</div>
-                                            </td>
-                                            <td style={{ textAlign: 'right', fontWeight: 800, color: '#ff682c', fontSize: '15px' }}>
-                                                {exp.currencySymbol} {Number(exp.amount).toLocaleString()}
-                                            </td>
-                                            <td style={{ textAlign: 'center' }}>
-                                                {exp.attachments && exp.attachments.length > 0 ? (
-                                                    <a 
-                                                        href={`http://localhost:5000/api/expenses/attachments/${exp.attachments[0].AttachmentId || exp.attachments[0].id}`}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="ts-cell-icon-btn orange"
-                                                    >
-                                                        <Paperclip size={14} />
-                                                    </a>
-                                                ) : (
-                                                    <span style={{ color: '#cbd5e1' }}>—</span>
-                                                )}
-                                            </td>
-                                            <td style={{ textAlign: 'right' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                                    <button 
-                                                        type="button" 
-                                                        className="opsai-btn-sm danger"
-                                                        onClick={() => setActionModal({ open: true, type: 'expenses', id: exp.id, action: 'Reject', remarks: '' })}
-                                                    >
-                                                        <XCircle size={13} /> Reject
-                                                    </button>
-                                                    <button 
-                                                        type="button" 
-                                                        className="opsai-btn-sm success"
-                                                        onClick={() => setActionModal({ open: true, type: 'expenses', id: exp.id, action: 'Approve', remarks: '' })}
-                                                    >
-                                                        <CheckCircle size={13} /> Approve
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {filteredExpenses.map((exp) => {
+                                        const isStep2 = exp.stepNumber === 2;
+
+                                        return (
+                                            <tr key={exp.id}>
+                                                <td>
+                                                    <div style={{ fontWeight: 800, color: '#0f172a' }}>{exp.title}</div>
+                                                    <div style={{ fontSize: '12px', color: '#64748b' }}>By <strong style={{ color: '#0f172a' }}>{exp.employeeName}</strong> • {exp.expenseNo}</div>
+                                                </td>
+                                                <td>
+                                                    <div style={{ fontWeight: 700, color: '#334155' }}>{exp.projectName}</div>
+                                                </td>
+                                                <td>
+                                                    <span className={`opsai-status-pill ${isStep2 ? 'approved' : 'pending'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                        {isStep2 ? <ShieldCheck size={11} /> : <Clock size={11} />}
+                                                        {exp.stepLabel}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div style={{ fontWeight: 600, color: '#334155' }}>{new Date(exp.expenseDate).toLocaleDateString()}</div>
+                                                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>{exp.vendor || 'Merchant'}</div>
+                                                </td>
+                                                <td style={{ textAlign: 'right', fontWeight: 800, color: '#ff682c', fontSize: '15px' }}>
+                                                    {exp.currencySymbol} {Number(exp.amount).toLocaleString()}
+                                                </td>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    {exp.attachments && exp.attachments.length > 0 ? (
+                                                        <a 
+                                                            href={`http://localhost:5000/api/expenses/attachments/${exp.attachments[0].AttachmentId || exp.attachments[0].id}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="ts-cell-icon-btn orange"
+                                                        >
+                                                            <Paperclip size={14} />
+                                                        </a>
+                                                    ) : (
+                                                        <span style={{ color: '#cbd5e1' }}>—</span>
+                                                    )}
+                                                </td>
+                                                <td style={{ textAlign: 'right' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                                        <button 
+                                                            type="button" 
+                                                            className="opsai-btn-sm danger"
+                                                            onClick={() => setActionModal({ open: true, type: 'expenses', id: exp.id, action: 'Reject', remarks: '' })}
+                                                        >
+                                                            <XCircle size={13} /> Reject
+                                                        </button>
+                                                        <button 
+                                                            type="button" 
+                                                            className="opsai-btn-sm success"
+                                                            onClick={() => setActionModal({ open: true, type: 'expenses', id: exp.id, action: 'Approve', remarks: '' })}
+                                                        >
+                                                            <CheckCircle size={13} /> {isStep2 ? 'Final Sign-Off' : 'Approve Step 1'}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         )}
@@ -379,7 +428,7 @@ export default function Approvals() {
                                 rows={3}
                                 value={actionModal.remarks}
                                 onChange={(e) => setActionModal({ ...actionModal, remarks: e.target.value })}
-                                placeholder="E.g., Approved based on Q3 deliverable milestones..."
+                                placeholder="E.g., Approved based on project deliverables..."
                             />
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
