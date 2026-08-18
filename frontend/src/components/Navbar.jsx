@@ -3,11 +3,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
     Home, Clock, DollarSign, Ticket, FolderOpen, 
-    Users, User, CheckSquare, Shield, BarChart2, LogOut, ChevronDown
+    Users, User, CheckSquare, Shield, BarChart2, LogOut, 
+    ChevronDown, Briefcase
 } from 'lucide-react';
 
 export default function Navbar() {
-    const { user, logout } = useAuth();
+    const { user, logout, isAdmin, isManager, isHR, isEmployeeOnly } = useAuth();
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
 
@@ -39,8 +40,9 @@ export default function Navbar() {
                     </NavLink>
                 </div>
 
-                {/* Primary Nav Tabs */}
+                {/* Primary Nav Tabs (RBAC-Filtered) */}
                 <nav className="opsai-nav-tabs">
+                    {/* All Users: Dashboard */}
                     <NavLink 
                         to="/dashboard" 
                         className={({ isActive }) => `opsai-nav-tab ${isActive ? 'active' : ''}`}
@@ -49,6 +51,7 @@ export default function Navbar() {
                         <span>Dashboard</span>
                     </NavLink>
 
+                    {/* All Users: TimeSheet */}
                     <NavLink 
                         to="/timesheet" 
                         className={({ isActive }) => `opsai-nav-tab ${isActive ? 'active' : ''}`}
@@ -57,6 +60,7 @@ export default function Navbar() {
                         <span>TimeSheet</span>
                     </NavLink>
 
+                    {/* All Users: Expenses */}
                     <NavLink 
                         to="/expenses" 
                         className={({ isActive }) => `opsai-nav-tab ${isActive ? 'active' : ''}`}
@@ -65,6 +69,7 @@ export default function Navbar() {
                         <span>Expenses</span>
                     </NavLink>
 
+                    {/* All Users: Tickets */}
                     <NavLink 
                         to="/tickets" 
                         className={({ isActive }) => `opsai-nav-tab ${isActive ? 'active' : ''}`}
@@ -73,21 +78,27 @@ export default function Navbar() {
                         <span>Tickets</span>
                     </NavLink>
 
-                    <NavLink 
-                        to="/projects" 
-                        className={({ isActive }) => `opsai-nav-tab secondary-tab ${isActive ? 'active' : ''}`}
-                    >
-                        <FolderOpen size={16} />
-                        <span>Projects</span>
-                    </NavLink>
+                    {/* Manager / Admin: Projects */}
+                    {(isManager || isAdmin) && (
+                        <NavLink 
+                            to="/projects" 
+                            className={({ isActive }) => `opsai-nav-tab secondary-tab ${isActive ? 'active' : ''}`}
+                        >
+                            <FolderOpen size={16} />
+                            <span>Projects</span>
+                        </NavLink>
+                    )}
 
-                    <NavLink 
-                        to="/approvals" 
-                        className={({ isActive }) => `opsai-nav-tab secondary-tab ${isActive ? 'active' : ''}`}
-                    >
-                        <CheckSquare size={16} />
-                        <span>Approvals</span>
-                    </NavLink>
+                    {/* Manager / Admin: Approvals Hub */}
+                    {(isManager || isAdmin) && (
+                        <NavLink 
+                            to="/approvals" 
+                            className={({ isActive }) => `opsai-nav-tab secondary-tab ${isActive ? 'active' : ''}`}
+                        >
+                            <CheckSquare size={16} />
+                            <span>Approvals</span>
+                        </NavLink>
+                    )}
                 </nav>
 
                 {/* Right Profile & Active Dot */}
@@ -110,24 +121,53 @@ export default function Navbar() {
                         </button>
 
                         {profileOpen && (
-                            <div className="profile-dropdown-menu" style={{ right: 0, top: '46px', width: '220px' }}>
+                            <div className="profile-dropdown-menu" style={{ right: 0, top: '46px', width: '230px' }}>
                                 <div style={{ padding: '8px 12px 10px', borderBottom: '1px solid var(--border-color)' }}>
                                     <div style={{ fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' }}>{user?.fullName}</div>
-                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</div>
+                                    <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</div>
+                                    <div style={{ marginTop: '4px' }}>
+                                        <span className="opsai-id-badge" style={{ fontSize: '10px' }}>
+                                            {isAdmin ? 'Workspace Admin' : (isManager ? 'Project Manager' : (isHR ? 'HR & Ops' : 'Employee'))}
+                                        </span>
+                                    </div>
                                 </div>
-                                <NavLink to="/employees" className="dropdown-item" onClick={() => setProfileOpen(false)}>
-                                    <Users size={14} /> Employee Directory
-                                </NavLink>
-                                <NavLink to="/reports/timesheet" className="dropdown-item" onClick={() => setProfileOpen(false)}>
-                                    <BarChart2 size={14} /> Reports & Analytics
-                                </NavLink>
-                                <NavLink to="/permissions" className="dropdown-item" onClick={() => setProfileOpen(false)}>
-                                    <Shield size={14} /> Roles & Permissions
-                                </NavLink>
+
+                                {/* Manager / HR / Admin: Employee Directory */}
+                                {(isManager || isHR || isAdmin) && (
+                                    <NavLink to="/employees" className="dropdown-item" onClick={() => setProfileOpen(false)}>
+                                        <Users size={14} /> Employee Directory
+                                    </NavLink>
+                                )}
+
+                                {/* Manager / HR / Admin: Reports & Analytics */}
+                                {(isManager || isHR || isAdmin) && (
+                                    <NavLink to="/reports/timesheet" className="dropdown-item" onClick={() => setProfileOpen(false)}>
+                                        <BarChart2 size={14} /> Reports & Analytics
+                                    </NavLink>
+                                )}
+
+                                {/* Admin Only: Client Master */}
+                                {isAdmin && (
+                                    <NavLink to="/clients" className="dropdown-item" onClick={() => setProfileOpen(false)}>
+                                        <Briefcase size={14} /> Clients Portfolio
+                                    </NavLink>
+                                )}
+
+                                {/* Admin Only: Roles & Permissions */}
+                                {isAdmin && (
+                                    <NavLink to="/permissions" className="dropdown-item" onClick={() => setProfileOpen(false)}>
+                                        <Shield size={14} /> Roles & Permissions
+                                    </NavLink>
+                                )}
+
                                 <div style={{ borderTop: '1px solid var(--border-color)', margin: '4px 0' }} />
+
+                                {/* All Users: Edit Profile */}
                                 <NavLink to="/profile" className="dropdown-item" onClick={() => setProfileOpen(false)} style={{ color: '#ff682c', fontWeight: 700 }}>
                                     <User size={14} /> Edit Profile
                                 </NavLink>
+
+                                {/* Sign Out */}
                                 <button type="button" className="dropdown-item danger" onClick={handleSignOut}>
                                     <LogOut size={14} /> Sign Out
                                 </button>

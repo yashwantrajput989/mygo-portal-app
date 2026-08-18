@@ -37,8 +37,27 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('mygo_token');
     };
 
+    const roleIds = user?.roles || [];
+    const isAdmin = roleIds.includes(5);
+    const isManager = roleIds.includes(2) || isAdmin;
+    const isHR = roleIds.includes(4) || isAdmin;
+    const isAccountManager = roleIds.includes(3) || isAdmin;
+    const isEmployeeOnly = !isAdmin && !isManager && !isHR && !isAccountManager;
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+        <AuthContext.Provider value={{ 
+            user, 
+            token, 
+            login, 
+            logout, 
+            loading,
+            roleIds,
+            isAdmin,
+            isManager,
+            isHR,
+            isAccountManager,
+            isEmployeeOnly
+        }}>
             {children}
         </AuthContext.Provider>
     );

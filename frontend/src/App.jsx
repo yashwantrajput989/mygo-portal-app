@@ -41,6 +41,23 @@ function ProtectedLayout({ children }) {
     );
 }
 
+function RoleGuard({ children, allowAdmin, allowManager, allowHR }) {
+    const { isAdmin, isManager, isHR, loading } = useAuth();
+
+    if (loading) return null;
+
+    const hasAccess = 
+        (allowAdmin && isAdmin) ||
+        (allowManager && (isManager || isAdmin)) ||
+        (allowHR && (isHR || isAdmin));
+
+    if (!hasAccess) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return children;
+}
+
 export default function App() {
     return (
         <AuthProvider>
@@ -48,18 +65,70 @@ export default function App() {
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    
+                    {/* All Users Accessible Routes */}
                     <Route path="/dashboard" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
                     <Route path="/timesheet" element={<ProtectedLayout><Timesheet /></ProtectedLayout>} />
-                    <Route path="/approvals" element={<ProtectedLayout><Approvals /></ProtectedLayout>} />
                     <Route path="/expenses" element={<ProtectedLayout><Expenses /></ProtectedLayout>} />
-                    <Route path="/projects" element={<ProtectedLayout><Projects /></ProtectedLayout>} />
-                    <Route path="/clients" element={<ProtectedLayout><Clients /></ProtectedLayout>} />
-                    <Route path="/employees" element={<ProtectedLayout><Employees /></ProtectedLayout>} />
                     <Route path="/tickets" element={<ProtectedLayout><Tickets /></ProtectedLayout>} />
-                    <Route path="/permissions" element={<ProtectedLayout><Permissions /></ProtectedLayout>} />
                     <Route path="/profile" element={<ProtectedLayout><Profile /></ProtectedLayout>} />
-                    <Route path="/reports/timesheet" element={<ProtectedLayout><Reports /></ProtectedLayout>} />
-                    <Route path="/reports/expenses" element={<ProtectedLayout><Reports /></ProtectedLayout>} />
+
+                    {/* Manager & Admin Routes */}
+                    <Route path="/projects" element={
+                        <ProtectedLayout>
+                            <RoleGuard allowManager={true}>
+                                <Projects />
+                            </RoleGuard>
+                        </ProtectedLayout>
+                    } />
+                    <Route path="/approvals" element={
+                        <ProtectedLayout>
+                            <RoleGuard allowManager={true}>
+                                <Approvals />
+                            </RoleGuard>
+                        </ProtectedLayout>
+                    } />
+
+                    {/* Manager, HR & Admin Routes */}
+                    <Route path="/employees" element={
+                        <ProtectedLayout>
+                            <RoleGuard allowManager={true} allowHR={true}>
+                                <Employees />
+                            </RoleGuard>
+                        </ProtectedLayout>
+                    } />
+                    <Route path="/reports/timesheet" element={
+                        <ProtectedLayout>
+                            <RoleGuard allowManager={true} allowHR={true}>
+                                <Reports />
+                            </RoleGuard>
+                        </ProtectedLayout>
+                    } />
+                    <Route path="/reports/expenses" element={
+                        <ProtectedLayout>
+                            <RoleGuard allowManager={true} allowHR={true}>
+                                <Reports />
+                            </RoleGuard>
+                        </ProtectedLayout>
+                    } />
+
+                    {/* Admin Only Routes */}
+                    <Route path="/clients" element={
+                        <ProtectedLayout>
+                            <RoleGuard allowAdmin={true}>
+                                <Clients />
+                            </RoleGuard>
+                        </ProtectedLayout>
+                    } />
+                    <Route path="/permissions" element={
+                        <ProtectedLayout>
+                            <RoleGuard allowAdmin={true}>
+                                <Permissions />
+                            </RoleGuard>
+                        </ProtectedLayout>
+                    } />
+
+                    {/* Fallback */}
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
             </Router>
